@@ -25,7 +25,6 @@ URL:            https://github.com/SUSE-Enceladus/%{name}
 Source:         https://files.pythonhosted.org/packages/source/c/%{name}/%{name}-%{version}.tar.gz
 BuildRequires:  python-rpm-macros
 BuildRequires:  python3-pluggy
-BuildRequires:  python3-msal
 BuildRequires:  python3-google-cloud-iam
 BuildRequires:  csp-billing-adapter
 %if %{with test}
@@ -34,7 +33,6 @@ BuildRequires:  python3-coverage
 BuildRequires:  python3-pytest-cov
 %endif
 Requires:       python3-pluggy
-Requires:       python3-msal
 Requires:       python3-google-cloud-iam
 Requires:       csp-billing-adapter
 BuildArch:      noarch
