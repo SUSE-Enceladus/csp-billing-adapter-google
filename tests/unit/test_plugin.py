@@ -15,13 +15,15 @@
 #
 
 import datetime
-import pytest
-
-from unittest.mock import Mock, patch
-
+from csp_billing_adapter.adapter import get_plugin_manager
 from csp_billing_adapter_google import plugin
 from csp_billing_adapter.config import Config
-from csp_billing_adapter.adapter import get_plugin_manager
+
+# Comment out the following for now, not currently used which
+# flake8 flags as error
+# import pytest
+# from unittest.mock import Mock, patch
+
 
 good_config_file = 'tests/data/config_good.yaml'
 bad_config_file = 'tests/data/config_bad.yaml'
@@ -32,6 +34,7 @@ config = Config.load_from_file(
     'tests/data/config_good.yaml',
     pm.hook
 )
+
 
 def test_get_config_from_good_config_file():
     """Test reading a config file from the specified location."""
@@ -51,12 +54,12 @@ def test_setup():
 def test_get_csp_name():
     assert plugin.get_csp_name(config) == 'google'
 
+
 def test_get_account_info():
     plugin.get_account_info(config)  # Currently no-op
 
 
-def test_meter_billing ():   # Currently no-op
-
+def test_meter_billing():   # Currently no-op
     dimensions = {'tier_1': 10}
     timestamp = datetime.datetime.now(datetime.timezone.utc)
 
