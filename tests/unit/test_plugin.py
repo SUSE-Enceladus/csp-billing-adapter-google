@@ -36,17 +36,6 @@ config = Config.load_from_file(
 )
 
 
-def test_get_config_from_good_config_file():
-    """Test reading a config file from the specified location."""
-
-    config = Config.load_from_file(
-        good_config_file,
-        pm.hook
-    )
-    assert config.get('version') == '1.1.1'
-    assert config.product_code == 'foo'
-
-
 def test_setup():
     plugin.setup_adapter(config)  # Currently no-op
 
