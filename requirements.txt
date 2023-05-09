@@ -1,0 +1,3 @@
+csp-billing-adapter @ git+https://github.com/suse-enceladus/csp-billing-adapter@main
+pluggy
+google-cloud-iam
