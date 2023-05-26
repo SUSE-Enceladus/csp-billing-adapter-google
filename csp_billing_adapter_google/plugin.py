@@ -22,6 +22,8 @@ from csp_billing_adapter.config import Config
 
 METADATA_ADDR = 'http://169.254.169.254/computeMetadata/v1/'
 METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
+AUDIENCE = 'http://smt-gce.susecloud.net'
+IDENTITY_URL = METADATA_ADDR + "instance/service-accounts/default/identity?audience={audience}&format={format}"
 
 @csp_billing_adapter.hookimpl
 def setup_adapter(config: Config):
@@ -51,55 +53,21 @@ def get_account_info(config: Config):
     The information contains the cloud provider
     and the metadata for instance and project.
     """
-    account_info = _get_metadata()
+    account_info = {}
+    account_info['identity'] = _get_identity()
     account_info['cloud_provider'] = get_csp_name(config)
+    return account_info
 
-def _get_metadata():
-    """
-    Return a dictionary with account information
 
-    The information contains the metadata for instance and project.
-    """
-    metadata = {}
-    metadata['instance'] = _get_instance_metadata()
-    metadata['project'] = _get_project_metadata()
-    return metadata
+def _get_identity():
+    """Return instance identity."""
+    identity = _fetch_metadata()
+    return identity.decode()
 
-def _get_instance_metadata():
-    """
-    Return a dictionary with instance metadata information
 
-    The information contains the metadata for name, license,
-    id, image and zone.
-    """
-    metadata_options = ['name', 'license', 'id', 'image', 'zone']
-    metadata = {}
-    for metadata_option in metadata_options:
-        uri = 'instance/'
-        if metadata_option not in ['license']:
-           uri += metadata_option
-        else:
-            if metadata_option in ['license']:
-                uri += 'licenses/0/id'
-
-        metadata[metadata_option] = _fetch_metadata(uri)
-    return metadata
-
-def _get_project_metadata():
-    """
-    Return a dictionary with project metadata information
-
-    The information contains the metadata for numeric project id and project-id.
-    """
-    metadata_options = ['numeric-project-id', 'project-id']
-    metadata = {}
-    for metadata_option in metadata_options:
-        metadata[metadata_option] = _fetch_metadata('project/' + metadata_option)
-    return metadata
-
-def _fetch_metadata(uri):
+def _fetch_metadata():
     """Return the response of the metadata request."""
-    url = METADATA_ADDR + url
+    url = IDENTITY_URL.format(audience=AUDIENCE, format='full')
     data_request = urllib.request.Request(url, headers=METADATA_HEADERS)
     try:
         value = urllib.request.urlopen(data_request).read()
