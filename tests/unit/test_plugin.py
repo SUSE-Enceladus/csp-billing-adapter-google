@@ -26,8 +26,6 @@ from csp_billing_adapter.config import Config
 
 
 good_config_file = 'tests/data/config_good.yaml'
-bad_config_file = 'tests/data/config_bad.yaml'
-missing_config_file = 'tests/data/config_missing.yaml'
 
 pm = get_plugin_manager()
 config = Config.load_from_file(
