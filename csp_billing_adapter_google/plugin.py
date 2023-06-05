@@ -29,6 +29,7 @@ def meter_billing(
     config: Config,
     dimensions: dict,
     timestamp: str,
+    dry_run: bool
 ):
     pass
 
