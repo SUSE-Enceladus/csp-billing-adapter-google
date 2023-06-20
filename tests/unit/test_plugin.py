@@ -15,8 +15,6 @@
 #
 
 import datetime
-import pytest
-import urllib.error
 
 from unittest.mock import Mock, patch
 
@@ -44,6 +42,7 @@ def test_setup():
 def test_get_csp_name():
     assert plugin.get_csp_name(config) == 'google'
 
+
 @patch('csp_billing_adapter_google.plugin.urllib.request.urlopen')
 def test_get_account_info(mock_urlopen):
     urlopen = Mock()
@@ -57,6 +56,7 @@ def test_get_account_info(mock_urlopen):
         'cloud_provider': 'google',
         'identity': 'identity'
     }
+
 
 def test_meter_billing():   # Currently no-op
     dimensions = {'tier_1': 10}
