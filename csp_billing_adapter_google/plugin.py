@@ -23,7 +23,10 @@ from csp_billing_adapter.config import Config
 METADATA_ADDR = 'http://169.254.169.254/computeMetadata/v1/'
 METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
 AUDIENCE = 'http://smt-gce.susecloud.net'
-IDENTITY_URL = METADATA_ADDR + "instance/service-accounts/default/identity?audience={audience}&format={format}"
+IDENTITY_URL = (METADATA_ADDR +
+                'instance/service-accounts/default/' +
+                'identity?audience={audience}&format={format}')
+
 
 @csp_billing_adapter.hookimpl
 def setup_adapter(config: Config):
