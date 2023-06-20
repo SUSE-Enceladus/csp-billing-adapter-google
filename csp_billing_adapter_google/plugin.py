@@ -15,8 +15,17 @@
 #
 
 import csp_billing_adapter
+import urllib.request
+import urllib.error
 
 from csp_billing_adapter.config import Config
+
+METADATA_ADDR = 'http://169.254.169.254/computeMetadata/v1/'
+METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
+AUDIENCE = 'http://smt-gce.susecloud.net'
+IDENTITY_URL = (METADATA_ADDR +
+                'instance/service-accounts/default/' +
+                'identity?audience={audience}&format={format}')
 
 
 @csp_billing_adapter.hookimpl
@@ -41,4 +50,31 @@ def get_csp_name(config: Config):
 
 @csp_billing_adapter.hookimpl(trylast=True)
 def get_account_info(config: Config):
-    pass
+    """
+    Return a dictionary with account information
+
+    The information contains the cloud provider
+    and the metadata for instance and project.
+    """
+    account_info = {}
+    account_info['identity'] = _get_identity()
+    account_info['cloud_provider'] = get_csp_name(config)
+    return account_info
+
+
+def _get_identity():
+    """Return instance identity."""
+    identity = _fetch_metadata()
+    return identity.decode()
+
+
+def _fetch_metadata():
+    """Return the response of the metadata request."""
+    url = IDENTITY_URL.format(audience=AUDIENCE, format='full')
+    data_request = urllib.request.Request(url, headers=METADATA_HEADERS)
+    try:
+        value = urllib.request.urlopen(data_request).read()
+    except urllib.error.URLError:
+        return None
+
+    return value
