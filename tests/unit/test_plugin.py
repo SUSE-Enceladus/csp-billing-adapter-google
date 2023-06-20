@@ -15,6 +15,11 @@
 #
 
 import datetime
+import pytest
+import urllib.error
+
+from unittest.mock import Mock, patch
+
 from csp_billing_adapter.adapter import get_plugin_manager
 from csp_billing_adapter_google import plugin
 from csp_billing_adapter.config import Config
@@ -24,10 +29,6 @@ from csp_billing_adapter.config import Config
 # import pytest
 # from unittest.mock import Mock, patch
 
-
-good_config_file = 'tests/data/config_good.yaml'
-bad_config_file = 'tests/data/config_bad.yaml'
-missing_config_file = 'tests/data/config_missing.yaml'
 
 pm = get_plugin_manager()
 config = Config.load_from_file(
@@ -43,10 +44,19 @@ def test_setup():
 def test_get_csp_name():
     assert plugin.get_csp_name(config) == 'google'
 
+@patch('csp_billing_adapter_google.plugin.urllib.request.urlopen')
+def test_get_account_info(mock_urlopen):
+    urlopen = Mock()
+    urlopen.read.side_effect = [
+        b'identity'
+        ]
+    mock_urlopen.return_value = urlopen
 
-def test_get_account_info():
-    plugin.get_account_info(config)  # Currently no-op
-
+    info = plugin.get_account_info(config)
+    assert info == {
+        'cloud_provider': 'google',
+        'identity': 'identity'
+    }
 
 def test_meter_billing():   # Currently no-op
     dimensions = {'tier_1': 10}
