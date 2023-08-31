@@ -39,17 +39,17 @@ def meter_billing(
     dimensions: dict,
     timestamp: str,
     dry_run: bool
-):
-    pass
+) -> dict:
+    return {}
 
 
 @csp_billing_adapter.hookimpl(trylast=True)
-def get_csp_name(config: Config):
+def get_csp_name(config: Config) -> str:
     return 'google'
 
 
 @csp_billing_adapter.hookimpl(trylast=True)
-def get_account_info(config: Config):
+def get_account_info(config: Config) -> dict:
     """
     Return a dictionary with account information
 

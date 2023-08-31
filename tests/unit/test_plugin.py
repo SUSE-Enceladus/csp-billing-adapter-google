@@ -62,9 +62,10 @@ def test_meter_billing():   # Currently no-op
     dimensions = {'tier_1': 10}
     timestamp = datetime.datetime.now(datetime.timezone.utc)
 
-    plugin.meter_billing(
+    status = plugin.meter_billing(
         config,
         dimensions,
         timestamp,
         dry_run=True
     )
+    assert status == {}
