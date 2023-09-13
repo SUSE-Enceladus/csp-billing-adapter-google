@@ -15,10 +15,16 @@
 #
 
 import csp_billing_adapter
+import functools
+import json
+import logging
 import urllib.request
 import urllib.error
 
+from datetime import datetime
+
 from csp_billing_adapter.config import Config
+from csp_billing_adapter.utils import retry_on_exception
 
 METADATA_ADDR = 'http://169.254.169.254/computeMetadata/v1/'
 METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
@@ -26,6 +32,10 @@ AUDIENCE = 'http://smt-gce.susecloud.net'
 IDENTITY_URL = (METADATA_ADDR +
                 'instance/service-accounts/default/' +
                 'identity?audience={audience}&format={format}')
+
+log = logging.getLogger('CSPBillingAdapter')
+
+UBBA_REPORT_URL = 'http://localhost:4567/report'
 
 
 @csp_billing_adapter.hookimpl
@@ -37,10 +47,72 @@ def setup_adapter(config: Config):
 def meter_billing(
     config: Config,
     dimensions: dict,
-    timestamp: str,
+    timestamp: datetime,
     dry_run: bool
 ) -> dict:
-    return {}
+    """
+    Process a metered billing based on the dimensions provided
+
+    Uses Google's User Based Billing Agent (ubbagent) as a sidecar
+    If a single dimension is provided the meter_usage API is
+    used for the metering. If there is an error the metering
+    is attempted 3 times before re-raising the exception to
+    calling scope.
+    """
+    status = {}
+
+    for dimension_name, usage_quantity in dimensions.items():
+        body = {
+            "name": dimension_name,
+            "startTime": str(timestamp),
+            "endTime":  str(timestamp),
+            "value": {
+                'int64value': usage_quantity,
+                },
+            }
+        uubody = json.dumps(body)
+        req = urllib.request.Request(
+            UBBA_REPORT_URL,
+            data=uubody.encode(),
+            headers={
+                'Content-type': 'application/json'
+                },
+            method='POST'
+            )
+
+        exc = None
+        response = None
+
+        try:
+            response = retry_on_exception(
+                functools.partial(
+                    urllib.request.urlopen,
+                    req
+                ),
+                logger=log,
+                func_name="urllib.request.urlopen"
+            )
+            print(response.read().decode())
+        except Exception as error:
+            exc = error
+            print(str(exc))
+        else:
+            status[dimension_name] = {
+                'status': 'submitted'
+            }
+            exc = None
+
+        if exc:
+            msg = (
+                f'Failed to meter bill dimension {dimension_name}: {str(exc)}'
+            )
+            status[dimension_name] = {
+                'error': msg,
+                'status': 'failed'
+            }
+            log.error(msg)
+
+    return status
 
 
 @csp_billing_adapter.hookimpl(trylast=True)
@@ -75,6 +147,6 @@ def _fetch_metadata():
     try:
         value = urllib.request.urlopen(data_request).read()
     except urllib.error.URLError:
-        return None
+        return "{}"
 
     return value

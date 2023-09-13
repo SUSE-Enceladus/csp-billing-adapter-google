@@ -15,8 +15,9 @@
 #
 
 import datetime
+from urllib.error import HTTPError
 
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, MagicMock, patch
 
 from csp_billing_adapter.adapter import get_plugin_manager
 from csp_billing_adapter_google import plugin
@@ -46,9 +47,7 @@ def test_get_csp_name():
 @patch('csp_billing_adapter_google.plugin.urllib.request.urlopen')
 def test_get_account_info(mock_urlopen):
     urlopen = Mock()
-    urlopen.read.side_effect = [
-        b'identity'
-        ]
+    urlopen.read.return_value = b'identity'
     mock_urlopen.return_value = urlopen
 
     info = plugin.get_account_info(config)
@@ -58,7 +57,29 @@ def test_get_account_info(mock_urlopen):
     }
 
 
-def test_meter_billing():   # Currently no-op
+@patch('csp_billing_adapter_google.plugin.urllib.request.urlopen')
+def test_fetch_metadata_fail(mock_urlopen):
+    urlopen = MagicMock()
+    urlopen.read.side_effect = HTTPError(
+        'http://169.254.169.254/computeMetadata/v1',
+        500,
+        'Internal Error',
+        {},
+        None
+    )
+    urlopen.__enter__.return_value = urlopen
+    mock_urlopen.return_value = urlopen
+
+    metadata = plugin._fetch_metadata()
+    assert metadata == "{}"
+
+
+@patch('csp_billing_adapter_google.plugin.urllib.request.urlopen')
+def test_meter_billing_pass(mock_urlopen):
+    urlopen = Mock()
+    urlopen.read.return_value = b'sure'
+    mock_urlopen.return_value = urlopen
+
     dimensions = {'tier_1': 10}
     timestamp = datetime.datetime.now(datetime.timezone.utc)
 
@@ -68,4 +89,35 @@ def test_meter_billing():   # Currently no-op
         timestamp,
         dry_run=True
     )
-    assert status == {}
+    status["tier_1"] == {'status': 'submitted'}
+
+
+@patch('csp_billing_adapter_google.plugin.urllib.request.urlopen')
+def test_meter_billing_fail(mock_urlopen):
+    urlopen = Mock()
+    urlopen.read.side_effect = HTTPError(
+        'http://localhost:4567/report',
+        500,
+        'Internal Error',
+        {},
+        None
+    )
+    mock_urlopen.return_value = urlopen
+
+    dimensions = {'tier_1': 10}
+    timestamp = datetime.datetime.now(datetime.timezone.utc)
+
+    status = plugin.meter_billing(
+        config,
+        dimensions,
+        timestamp,
+        dry_run=True
+    )
+    assert status["tier_1"] == {
+        'error': (
+            r'Failed to meter bill dimension tier_1: '
+            r'HTTP Error 500: '
+            r'Internal Error'
+            ),
+        'status': 'failed'
+    }
