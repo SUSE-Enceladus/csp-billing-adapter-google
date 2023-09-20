@@ -25,6 +25,7 @@ from datetime import datetime
 
 from csp_billing_adapter.config import Config
 from csp_billing_adapter.utils import retry_on_exception
+from csp_billing_adapter_google import __version__
 
 METADATA_ADDR = 'http://169.254.169.254/computeMetadata/v1/'
 METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
@@ -150,3 +151,8 @@ def _fetch_metadata():
         return "{}"
 
     return value
+
+
+@csp_billing_adapter.hookimpl
+def get_version():
+    return ('google_plugin', __version__)
