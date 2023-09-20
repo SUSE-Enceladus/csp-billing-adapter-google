@@ -121,3 +121,9 @@ def test_meter_billing_fail(mock_urlopen):
             ),
         'status': 'failed'
     }
+
+
+def test_get_version():
+    version = plugin.get_version()
+    assert version[0] == 'google_plugin'
+    assert version[1]
