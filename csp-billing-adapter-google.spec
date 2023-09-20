@@ -64,7 +64,7 @@ metering of usage in Google GCP.
 
 %files %{python_files}
 %license LICENSE
-%doc README.md CONTRIBUTING.md
+%doc README.md CONTRIBUTING.md CHANGES.md
 %{python_sitelib}/csp_billing_adapter_google
 %{python_sitelib}/csp_billing_adapter_google-%{version}*-info
 
