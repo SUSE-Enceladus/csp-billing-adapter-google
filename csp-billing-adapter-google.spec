@@ -19,7 +19,7 @@
 %global skip_python2 1
 %define pythons python3
 Name:           csp-billing-adapter-google
-Version:        0.1.0
+Version:        0.2.0
 Release:        0
 Summary:        Implements Google metering hooks for csp-billing-adapter
 License:        Apache-2.0
