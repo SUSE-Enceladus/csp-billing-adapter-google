@@ -15,9 +15,8 @@
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
 #
 
-%{?!python_module:%define python_module() python-%{**} python3-%{**}}
-%global skip_python2 1
-%define pythons python3
+%{?sle15_python_module_pythons}
+
 Name:           csp-billing-adapter-google
 Version:        0.2.0
 Release:        0
@@ -27,10 +26,12 @@ URL:            https://github.com/SUSE-Enceladus/%{name}
 Source:         https://files.pythonhosted.org/packages/source/c/%{name}/%{name}-%{version}.tar.gz
 BuildRequires:  fdupes
 BuildRequires:  python-rpm-macros
-BuildRequires:  %{python_module setuptools}
-BuildRequires:  %{python_module pluggy}
-BuildRequires:  %{python_module google-cloud-core}
 BuildRequires:  %{python_module csp-billing-adapter}
+BuildRequires:  %{python_module google-cloud-core}
+BuildRequires:  %{python_module pip}
+BuildRequires:  %{python_module pluggy}
+BuildRequires:  %{python_module setuptools}
+BuildRequires:  %{python_module wheel}
 %if %{with test}
 BuildRequires:  %{python_module pytest}
 BuildRequires:  %{python_module coverage}
@@ -51,10 +52,10 @@ metering of usage in Google GCP.
 %autosetup -n %{name}-%{version}
 
 %build
-%python_build
+%pyproject_wheel
 
 %install
-%python_install
+%pyproject_install
 %python_expand %fdupes %{buildroot}%{$python_sitelib}
 
 %check
