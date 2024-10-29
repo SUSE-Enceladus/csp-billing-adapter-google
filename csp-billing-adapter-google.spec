@@ -42,6 +42,7 @@ Requires:       python-pluggy
 Requires:       python-google-cloud-core
 Requires:       python-csp-billing-adapter
 BuildArch:      noarch
+Obsoletes:      python3-csp-billing-adapter-google < %{version}
 %python_subpackages
 
 %description
