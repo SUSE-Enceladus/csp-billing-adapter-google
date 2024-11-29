@@ -30,9 +30,11 @@ from csp_billing_adapter_google import __version__
 METADATA_ADDR = 'http://169.254.169.254/computeMetadata/v1/'
 METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
 AUDIENCE = 'http://smt-gce.susecloud.net'
-IDENTITY_URL = (METADATA_ADDR +
-                'instance/service-accounts/default/' +
-                'identity?audience={audience}&format={format}')
+IDENTITY_URL = (
+    METADATA_ADDR +
+    'instance/service-accounts/default/' +
+    'identity?audience={audience}&format={format}'
+)
 
 log = logging.getLogger('CSPBillingAdapter')
 
@@ -49,6 +51,8 @@ def meter_billing(
     config: Config,
     dimensions: dict,
     timestamp: datetime,
+    billing_period_start: str,
+    billing_period_end: str,
     dry_run: bool
 ) -> dict:
     """
@@ -65,10 +69,10 @@ def meter_billing(
     for dimension_name, usage_quantity in dimensions.items():
         body = {
             "name": dimension_name,
-            "startTime": str(timestamp),
-            "endTime":  str(timestamp),
+            "startTime": billing_period_start,
+            "endTime": billing_period_end,
             "value": {
-                'int64value': usage_quantity,
+                    'int64value': usage_quantity,
                 },
             }
         uubody = json.dumps(body)
@@ -77,9 +81,9 @@ def meter_billing(
             data=uubody.encode(),
             headers={
                 'Content-type': 'application/json'
-                },
+            },
             method='POST'
-            )
+        )
 
         exc = None
         response = None
@@ -93,10 +97,10 @@ def meter_billing(
                 logger=log,
                 func_name="urllib.request.urlopen"
             )
-            print(response.read().decode())
+            log.debug(response.read().decode())
         except Exception as error:
             exc = error
-            print(str(exc))
+            log.exception(str(exc))
         else:
             status[dimension_name] = {
                 'status': 'submitted'

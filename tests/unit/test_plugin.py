@@ -87,6 +87,8 @@ def test_meter_billing_pass(mock_urlopen):
         config,
         dimensions,
         timestamp,
+        '2024-10-02T17:58:09.985794+00:00',
+        '2024-10-02T17:58:09.985794+00:00',
         dry_run=True
     )
     status["tier_1"] == {'status': 'submitted'}
@@ -111,6 +113,8 @@ def test_meter_billing_fail(mock_urlopen):
         config,
         dimensions,
         timestamp,
+        '2024-10-02T17:58:09.985794+00:00',
+        '2024-10-02T17:58:09.985794+00:00',
         dry_run=True
     )
     assert status["tier_1"] == {
