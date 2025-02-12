@@ -49,7 +49,8 @@ def meter_billing(
     config: Config,
     dimensions: dict,
     timestamp: datetime,
-    dry_run: bool
+    dry_run: bool,
+    customer_id: str = None
 ) -> dict:
     """
     Process a metered billing based on the dimensions provided
