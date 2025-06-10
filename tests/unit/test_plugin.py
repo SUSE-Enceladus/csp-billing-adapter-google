@@ -87,7 +87,8 @@ def test_meter_billing_pass(mock_urlopen):
         config,
         dimensions,
         timestamp,
-        dry_run=True
+        dry_run=True,
+        customer_id='123'
     )
     status["tier_1"] == {'status': 'submitted'}
 
@@ -111,7 +112,8 @@ def test_meter_billing_fail(mock_urlopen):
         config,
         dimensions,
         timestamp,
-        dry_run=True
+        dry_run=True,
+        customer_id='123'
     )
     assert status["tier_1"] == {
         'error': (
